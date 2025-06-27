@@ -122,10 +122,19 @@ export default function Home() {
     setTransactionStatus('Consuming note and generating proof...');
 
     try {
-      const noteIdToConsume = consumableNotes[0].inputNoteRecord().id();
+      const noteToConsume = consumableNotes[0];
+      console.log('Note to consume:', noteToConsume);
+      console.log('Note type:', typeof noteToConsume);
+      console.log('Note constructor:', noteToConsume.constructor.name);
       
+      // Get the note ID and convert to string immediately to avoid ownership issues
+      const noteId = noteToConsume.inputNoteRecord().id();
+      const noteIdString = noteId.toString();
+      console.log('Note ID string:', noteIdString);
+      
+      // Create a fresh note ID from the string to avoid Rust ownership issues
       const consumeTransactionRequest = webClient.newConsumeTransactionRequest([
-        noteIdToConsume,
+        noteIdString,
       ]);
 
       const consumeTransactionResult = await webClient.newTransaction(
@@ -144,7 +153,7 @@ export default function Home() {
       
     } catch (error) {
       console.error('Failed to consume note:', error);
-      setTransactionStatus('Failed to consume note. Please try again.');
+      setTransactionStatus(`Failed to consume note: ${error instanceof Error ? error.message : 'Unknown error'}`);
     } finally {
       setIsLoading(false);
     }
